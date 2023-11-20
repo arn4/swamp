@@ -1,4 +1,4 @@
-LOCATION: "http://localhost:8000/"
+LOCATION: "https://arn4.github.io/swamp/"
 STATIC: static
 DEFAULT_LANGUAGE: en
 DEFAULT_LANGUAGE_SUBDIRECTORY: False
