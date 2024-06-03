@@ -464,6 +464,7 @@ def generateWebsite(static_file_list = None):
     variables.append({'timestamp':str(int(datetime.datetime.now().timestamp()*1000))})
 
     # Setting languages configuaration
+    alt_languages = []
     try:
         alt_languages[:] = config['ALT_LANGUAGES']
     except KeyError:
@@ -611,7 +612,7 @@ def main(args):
     checksum_source_directory = 'wrong_checksum'
     
     while True:
-        actual_checksum = directoriesChecksum([working_path+source_path, working_path+ static_path])
+        actual_checksum = directoriesChecksum([working_path+source_path, working_path+ static_path, working_path])
         if checksum_source_directory != actual_checksum:
             generateWebsite(static_file_list = args_dictionary['staticlist'])
             checksum_source_directory = actual_checksum
