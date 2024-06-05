@@ -59,6 +59,10 @@ alt_languages_path = {}
 # Boolean to create a subdirectory for the default languages
 subdirectory_default_language = False
 
+########################### EXCEPTIONS ################################
+class NoLocaleError(Exception):
+    pass
+
 ################################# CODE #################################
 
 # Every time that a variable is called 'path' it's assumed that it represents
@@ -171,6 +175,9 @@ def loadTemplate(path):
 #  containg them in the list of variables. If the directory does not contain
 #  variables it creates an empty dictionary.
 def loadVariables(path):
+    if not os.path.isfile(path + 'variables.yaml'):
+        variables.append({})
+        return
     with open(path + 'variables.yaml', 'r') as varfile:
         new_dict = yaml.safe_load(varfile.read())
 
@@ -202,10 +209,20 @@ def loadHTMLFiles(path):
 def unloadHTMLFiles():
     del HTML_files[-1]
 
+def empytLocale():
+    for lang in alt_languages+[config['DEFAULT_LANGUAGE']]:
+        locale[lang].append({})
+
 def loadLocale(path):
+    if not os.path.isfile(path + 'locale.yaml'):
+        empytLocale()
+        return
     with open(path + 'locale.yaml', 'r') as localefile:
         # Get the locale path names
         locale_data = yaml.safe_load(localefile.read())
+        if locale_data is None:
+            empytLocale()
+            return
         for lang in alt_languages:
             try:
                 alt_languages_path[lang] = makePathNormalized(alt_languages_path[lang] + makePathNormalized(locale_data['path_name'][lang]))
@@ -260,6 +277,9 @@ def localizedTag(name, lang, self_tag_name = None):
 ## Get the tag of the directory (contained in the file 'tag.yaml') and
 #  stores it in the links dictionary.
 def getPathTags(path):
+    # if tag.yaml is not present it returns random tag
+    if not os.path.isfile(path + 'tag.yaml'):
+        return sha256(path.encode('utf-8')).hexdigest()
     with open(path + 'tag.yaml', 'r') as tagfile:
         tagdata = yaml.safe_load(tagfile.read())
         if path.startswith(working_path):
