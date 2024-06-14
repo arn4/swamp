@@ -26,6 +26,10 @@ watch_waiting_time = 0.4
 default_webserver_port = 8000
 default_webserver_address = 'localhost'
 
+# Excluding when detecting changes
+exclude_dirs = ['.git', 'venv', '__pycache__', '.vscode', 'public', 'swamp']
+excluding_files = ['swamp.py','.DS_Store', '.gitignore', '.gitmodules']
+
 ########################### GLOBAL VARIABLES ###########################
 # Dictioanry of global configuration.
 config = {}
@@ -537,10 +541,16 @@ def generateWebsite(static_file_list = None):
 def directoriesChecksum(directories):
     hash = hashlib.md5()
     for directory in directories:
-        for dirpath, dirnames, filenames in os.walk(directory, topdown=True):
+        for dirpath, dirnames, filenames in os.walk(directory, topdown=True, followlinks=False):
+            # skip all pat containing .git or venv
+            if any(exclude_dir in dirpath for exclude_dir in exclude_dirs):
+                continue
+            logging.debug(f'Exploring {dirpath} - {os.path.basename(dirpath)}')
             dirnames.sort(key=os.path.normcase)
             filenames.sort(key=os.path.normcase)
             for filename in filenames:
+                if filename in excluding_files:
+                    continue
                 filepath = os.path.join(dirpath, filename)
 
                 f = open(filepath, 'rb')
@@ -632,8 +642,10 @@ def main(args):
     checksum_source_directory = 'wrong_checksum'
     
     while True:
-        actual_checksum = directoriesChecksum([working_path+source_path, working_path+ static_path, working_path])
+        actual_checksum = directoriesChecksum([working_path])
         if checksum_source_directory != actual_checksum:
+            logging.info(f'Generating website at {datetime.datetime.now()}')
+            logging.debug('Checksum old {0} new {1}'.format(checksum_source_directory, actual_checksum))
             generateWebsite(static_file_list = args_dictionary['staticlist'])
             checksum_source_directory = actual_checksum
         time.sleep(watch_waiting_time)
