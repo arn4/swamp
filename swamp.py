@@ -315,11 +315,11 @@ def getHTMLFile(name):
 #  form: " [code] {'mark' name_of_expression 'mark'}
 def expressionGetter(code, mark):
     start_index = code.find('{' + mark)
-    if start_index is -1:
+    if start_index == -1:
         return None
 
     end_index = code.find(mark + '}')
-    if end_index is -1:
+    if end_index == -1:
         #TODO: Raise something wich will work...
         raise VariableError('Missing end of variable')
     return code[start_index + 2:end_index]
